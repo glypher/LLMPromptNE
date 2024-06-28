@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<!-- Generated with gpt-4 -->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alpine.js POST Example with Tailwind CSS</title>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+
+<div class="max-w-lg w-full p-6 bg-white rounded-lg shadow-md" x-data="formHandler()">
+    <h2 class="text-2xl font-bold mb-4">Submit Your LLM Prompt</h2>
+    <form @submit.prevent="sendData">
+        <div class="mb-4">
+            <label for="inputText" class="block text-gray-700 font-medium mb-2">Enter Text (Max 200 words):</label>
+            <textarea id="inputText1" x-text="inputText" @input="checkWordLimit" rows="5"
+                      class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none"
+                      placeholder="Type your text here..."></textarea>
+            <p class="text-sm text-gray-500 mt-2" x-text="wordCountMessage"></p>
+        </div>
+        <button type="submit" class="w-full bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700">
+            Send
+        </button>
+    </form>
+    <p x-show="responseMessage" x-text="responseMessage" class="mt-4 text-green-500"></p>
+</div>
+
+<script>
+    function formHandler() {
+        return {
+            inputText: '',
+            responseMessage: '',
+            wordCountMessage: '',
+            maxWords: 200,
+            checkWordLimit() {
+                const words = this.inputText.split(/\s+/).filter(word => word.length > 0);
+                if (words.length > this.maxWords) {
+                    this.inputText = words.slice(0, this.maxWords).join(' ');
+                }
+                this.wordCountMessage = `Word count: ${words.length}/${this.maxWords}`;
+            },
+            async sendData() {
+                try {
+                    const response = await fetch('htts://www.2glyph.com/confidetial/llm/v1/protect', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ text: this.inputText })
+                    });
+                    if (response.ok) {
+                        const result = await response.json();
+                        this.responseMessage = 'Data sent successfully: ' + result.message;
+                    } else {
+                        this.responseMessage = 'Error sending data';
+                    }
+                } catch (error) {
+                    this.responseMessage = 'Error: ' + error.message;
+                }
+            }
+        }
+    }
+</script>
+
+</body>
+</html>
