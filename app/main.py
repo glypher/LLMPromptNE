@@ -1,6 +1,7 @@
 from typing import Union
 from fastapi import FastAPI, Response
 from pydantic import BaseModel
+import logging
 
 from .model import Model
 
@@ -10,6 +11,10 @@ class Prompt(BaseModel):
 
 
 app = FastAPI()
+
+uv_log = logging.getLogger("uvicorn.access")
+if uv_log:
+    uv_log.disabled = True
 
 model = Model()
 

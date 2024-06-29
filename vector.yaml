@@ -8,6 +8,9 @@ sources:
       - conf_llm  # Replace with your container name
     auto_partial_merge: true
 
+  vector_logs:
+    type: internal_logs
+
 # Define the sink to send logs to Elasticsearch
 sinks:
   elasticsearch:
@@ -21,6 +24,13 @@ sinks:
     #   user: "<username>"
     #   password: "<password>"
 
+  console:
+    type: console
+    inputs:
+      - vector_logs
+    encoding:
+      codec: text
+
 transforms:
   parse_python_logger:
     type: remap
@@ -28,8 +38,8 @@ transforms:
       - conf_llm_logs
     source: |
       # Parse the log message using regex
-      . = parse_regex!(.message, r'^(?P<timestamp>\d+/\d+/\d+ \d+:\d+:\d+) - (?P<logger_name>\S+) - (?P<level>\S+) - (?P<log_message>.*)$')
+      # 2024/06/29 23:31:16 - INFO - something to test for
+      . = parse_regex!(.message, r'^(?P<timestamp>\d+/\d+/\d+ \d+:\d+:\d+) - (?P<level>\S+) - (?P<log_message>.*)$')
 
       # Optionally, convert timestamp to a more usable format
-      # 2024-06-29 22:19:00,434 - root - INFO - something to test for
       .timestamp = parse_timestamp(.timestamp, "%Y/%m/%d %H:%M:%S") ?? now()
