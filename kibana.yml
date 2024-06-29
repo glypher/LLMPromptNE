@@ -1,0 +1,5 @@
+server.port: 5601
+server.publicBaseUrl: "http://localhost:5601/kibana"
+server.host: "localhost"
+server.basePath: "/kibana"
+server.rewriteBasePath: true

@@ -1,6 +1,18 @@
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, GenerationConfig
 from peft import PeftModel
 import torch
+import logging
+import sys
+
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
+
+handler = logging.StreamHandler(sys.stdout)
+handler.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', "%Y/%m/%d %H:%M:%S")
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+
 
 PEFT_CHECKTPOINT = 'app/ppo_model_checkpoint'
 
@@ -31,7 +43,11 @@ Prompt:"""
             
             gen_ids = self._model.generate(input_ids=inp, generation_config=self._generation_config)
     
-            return self._tokenizer.decode( torch.as_tensor(gen_ids).squeeze(), skip_special_tokens=True, clean_up_tokenization_spaces=True )
+            reply = self._tokenizer.decode( torch.as_tensor(gen_ids).squeeze(), skip_special_tokens=True, clean_up_tokenization_spaces=True )
+            logger.info(reply)
+            return reply
         except Exception as e:
-            return "Error: " + str(e)
+            err = "Error: " + str(e)
+            logger.error(err)
+            return err
         

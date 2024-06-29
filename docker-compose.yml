@@ -1,0 +1,60 @@
+services:
+  confidential_llm:
+    image: conf_llm_img
+    container_name: conf_llm
+    ports:
+      - "8040:80"
+
+  elasticsearch:
+    image: elasticsearch:7.9.2
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+    ports:
+      - "9200:9200"
+    depends_on:
+      - confidential_llm
+    networks:
+      - elk-network
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+
+  kibana:
+    image: kibana:7.9.2
+    container_name: kibana
+    environment:
+      - SERVER_BASEPATH=/confidential/stats
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    networks:
+      - elk-network
+    volumes:
+      - kibanadata:/usr/share/kibana/data
+
+  vector:
+    image: timberio/vector:0.32.1-debian
+    container_name: vector
+    volumes:
+      - ./vector.yaml:/etc/vector/vector.yaml
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: ["-c", "/etc/vector/vector.yaml"]
+    ports:
+      - '8686:8686'
+    depends_on:
+      - elasticsearch
+    networks:
+      - elk-network
+
+
+networks:
+  elk-network:
+    driver: bridge
+
+volumes:
+  esdata:
+    driver: local
+  kibanadata:
+    driver: local

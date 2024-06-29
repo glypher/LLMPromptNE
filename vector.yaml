@@ -1,0 +1,35 @@
+data_dir: /var/lib/vector
+
+# Define the source to read logs from Docker container stdout
+sources:
+  conf_llm_logs:
+    type: docker_logs
+    include_containers:
+      - conf_llm  # Replace with your container name
+    auto_partial_merge: true
+
+# Define the sink to send logs to Elasticsearch
+sinks:
+  elasticsearch:
+    type: elasticsearch
+    inputs:
+      - parse_python_logger
+    endpoint: "http://elasticsearch:9200"  # Replace with your Elasticsearch endpoint
+    # Optional: add authentication if required
+    # auth:
+    #   strategy: "basic"
+    #   user: "<username>"
+    #   password: "<password>"
+
+transforms:
+  parse_python_logger:
+    type: remap
+    inputs:
+      - conf_llm_logs
+    source: |
+      # Parse the log message using regex
+      . = parse_regex!(.message, r'^(?P<timestamp>\d+/\d+/\d+ \d+:\d+:\d+) - (?P<logger_name>\S+) - (?P<level>\S+) - (?P<log_message>.*)$')
+
+      # Optionally, convert timestamp to a more usable format
+      # 2024-06-29 22:19:00,434 - root - INFO - something to test for
+      .timestamp = parse_timestamp(.timestamp, "%Y/%m/%d %H:%M:%S") ?? now()
