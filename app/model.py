@@ -56,14 +56,12 @@ Prompt:"""
             
             r = self._rouge.compute(predictions=reply, references=prompt, use_stemmer=True)
 
-            log = f"{round(end - start, 7)} - {round(r['rouge1'], 5)} - {reply}"
-            logger.info(reply)
+            logger.info(f"{round(end - start, 7)} - {round(r['rouge1'], 5)} - {reply}")
 
             return reply
         except Exception as e:
             err = "Error: " + str(e)
-            log = f"0.0 - 0.0 - {err}"
-            logger.error(log)
+            logger.error(f"0.0 - 0.0 - {err}")
             return err
 
         

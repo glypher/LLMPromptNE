@@ -8,8 +8,8 @@ sources:
       - conf_llm  # Replace with your container name
     auto_partial_merge: true
 
-  vector_logs:
-    type: internal_logs
+      #  vector_logs:
+      #    type: internal_logs
 
 # Define the sink to send logs to Elasticsearch
 sinks:
@@ -24,12 +24,13 @@ sinks:
     #   user: "<username>"
     #   password: "<password>"
 
-  console:
-    type: console
-    inputs:
-      - vector_logs
-    encoding:
-      codec: text
+      
+#  console:
+#    type: console
+#    inputs:
+#      - vector_logs
+#    encoding:
+#      codec: text
 
 transforms:
   parse_python_logger:
@@ -38,8 +39,10 @@ transforms:
       - conf_llm_logs
     source: |
       # Parse the log message using regex
-      # 2024/06/30 12:31:58 - INFO - 0.0 - 0.88235 - Something to test
-      . = parse_regex!(.message, r'^(?P<timestamp>\d+/\d+/\d+ \d+:\d+:\d+) - (?P<level>\S+) - (?<inference_time>\d+.\d+) - (?<rouge_1ngram>\d+.\d+) - (?P<log_message>.*)$')
+      # 2024/06/30 15:04:32 - INFO - 0.0 - 0.88235 - Something to test
+      . = parse_regex!(.message, r'^(?P<timestamp>\d+/\d+/\d+ \d+:\d+:\d+) - (?P<level>\S+) - (?P<infertime>\d+.\d+) - (?P<rougemetric>\d+.\d+) - (?P<log_message>.*)$')
 
       # Optionally, convert timestamp to a more usable format
       .timestamp = parse_timestamp(.timestamp, "%Y/%m/%d %H:%M:%S") ?? now()
+      .infertime = to_float!(.infertime)
+      .rougemetric = to_float!(.rougemetric)
