@@ -38,8 +38,8 @@ transforms:
       - conf_llm_logs
     source: |
       # Parse the log message using regex
-      # 2024/06/29 23:31:16 - INFO - something to test for
-      . = parse_regex!(.message, r'^(?P<timestamp>\d+/\d+/\d+ \d+:\d+:\d+) - (?P<level>\S+) - (?P<log_message>.*)$')
+      # 2024/06/30 12:31:58 - INFO - 0.0 - 0.88235 - Something to test
+      . = parse_regex!(.message, r'^(?P<timestamp>\d+/\d+/\d+ \d+:\d+:\d+) - (?P<level>\S+) - (?<inference_time>\d+.\d+) - (?<rouge_1ngram>\d+.\d+) - (?P<log_message>.*)$')
 
       # Optionally, convert timestamp to a more usable format
       .timestamp = parse_timestamp(.timestamp, "%Y/%m/%d %H:%M:%S") ?? now()

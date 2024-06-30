@@ -1,8 +1,12 @@
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, GenerationConfig
 from peft import PeftModel
 import torch
+import evaluate
+import rouge_score
+import time
 import logging
 import sys
+
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -29,6 +33,8 @@ class Model:
 
         self._generation_config = GenerationConfig(max_new_tokens=100, top_k=0.0, top_p=1.0, do_sample=True)
 
+        self._rouge = evaluate.load('rouge')
+
     @staticmethod
     def _make_safe_prompt(prompt):
         return f"""Create a safe prompt from the following prompt:
@@ -39,15 +45,25 @@ Prompt:"""
 
     def protect(self, prompt: str):
         try:
+            start = time.time()
             inp = self._tokenizer(Model._make_safe_prompt(prompt), return_tensors="pt", padding=True).input_ids
             
             gen_ids = self._model.generate(input_ids=inp, generation_config=self._generation_config)
     
             reply = self._tokenizer.decode( torch.as_tensor(gen_ids).squeeze(), skip_special_tokens=True, clean_up_tokenization_spaces=True )
+            end = start = time.time()
+
+            
+            r = self._rouge.compute(predictions=reply, references=prompt, use_stemmer=True)
+
+            log = f"{round(end - start, 7)} - {round(r['rouge1'], 5)} - {reply}"
             logger.info(reply)
+
             return reply
         except Exception as e:
             err = "Error: " + str(e)
-            logger.error(err)
+            log = f"0.0 - 0.0 - {err}"
+            logger.error(log)
             return err
+
         

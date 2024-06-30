@@ -6,7 +6,7 @@ RUN pip install --no-cache-dir --upgrade fastapi pydantic
 
 RUN pip install torch torchdata  --index-url https://download.pytorch.org/whl/cpu
 
-RUN pip install transformers peft
+RUN pip install transformers peft evaluate rouge_score
  
 COPY ./app /code/app
 
